@@ -291,7 +291,7 @@
         <dependency>
             <groupId>de.diddiz</groupId>
             <artifactId>logblock</artifactId>
-            <version>1.94</version>
+            <version>1.8</version>
         </dependency>
         <!-- HawkEye -->
         <dependency>
