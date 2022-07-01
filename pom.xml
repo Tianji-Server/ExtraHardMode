@@ -289,7 +289,7 @@
         <dependency>
              <groupId>net.coreprotect</groupId>
              <artifactId>coreprotect</artifactId>
-             <version>21.0</version>
+             <version>21.2</version>
              <scope>provided</scope>
         </dependency>
         <!-- LogBlock -->
