@@ -198,6 +198,10 @@
             <id>local</id>
             <url>http://localhost:8081/nexus/content/groups/public/</url>
         </repository>-->
+        <repository>
+            <id>playpro-repo</id>
+            <url>https://maven.playpro.com</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -270,7 +274,7 @@
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>
-            <version>6.1.1-SNAPSHOT</version>
+            <version>7.0.7</version>
         </dependency>
 
         <!-- Block Loggers -->
@@ -283,9 +287,12 @@
         <!--</dependency>-->
         <!-- CoreProtect -->
         <dependency>
-            <groupId>net.coreprotect.CoreProtect</groupId>
-            <artifactId>CoreProtect</artifactId>
-            <version>2.0.8</version>
+             <groupId>net.coreprotect</groupId>
+             <artifactId>coreprotect</artifactId>
+             <version>21.0</version>
+             <scope>provided</scope>
+        </dependency>
+
         </dependency>
         <!-- LogBlock -->
         <dependency>
