@@ -173,13 +173,17 @@
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
         <repository>
-            <id>github-releases</id>
-            <url>https://di3mex.github.io/repo_bukkit/releases/</url>
+            <id>playpro-repo</id>
+            <url>https://maven.playpro.com</url>
         </repository>
-        <repository>
-            <id>github-snapshots</id>
-            <url>https://di3mex.github.io/repo_bukkit/snapshots/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>github-releases</id>-->
+<!--            <url>https://di3mex.github.io/repo_bukkit/releases/</url>-->
+<!--        </repository>-->
+<!--        <repository>-->
+<!--            <id>github-snapshots</id>-->
+<!--            <url>https://di3mex.github.io/repo_bukkit/snapshots/</url>-->
+<!--        </repository>-->
         <!--<repository>-->
             <!--<id>prism-repo</id>-->
             <!--<url>http://dhmc.us:8081/nexus/content/repositories/releases/</url>-->
@@ -209,6 +213,14 @@
         <repository>
             <id>CodeMC</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>Lumine</id>
+            <url>https://mvn.lumine.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>Comphenix</id>
+            <url>https://repo.comphenix.net/content/groups/public/</url>
         </repository>
         <!--<repository>
             <id>local</id>
@@ -299,21 +311,16 @@
         <!--</dependency>-->
         <!-- CoreProtect -->
         <dependency>
-            <groupId>net.coreprotect.CoreProtect</groupId>
-            <artifactId>CoreProtect</artifactId>
-            <version>2.0.8</version>
+            <groupId>net.coreprotect</groupId>
+            <artifactId>coreprotect</artifactId>
+            <version>22.4</version>
+            <scope>provided</scope>
         </dependency>
         <!-- LogBlock -->
         <dependency>
             <groupId>de.diddiz</groupId>
             <artifactId>logblock</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <!-- HawkEye -->
-        <dependency>
-            <groupId>uk.co.oliwali</groupId>
-            <artifactId>HawkEye</artifactId>
-            <version>1.6.0</version>
+            <version>1.94</version>
         </dependency>
 
         <dependency>

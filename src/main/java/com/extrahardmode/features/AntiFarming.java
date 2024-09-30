@@ -52,6 +52,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 /**
  * Antifarming module
@@ -181,7 +182,14 @@ public class AntiFarming extends ListenerModule
         final boolean weakCropsEnabled = CFG.getBoolean(RootNode.WEAK_FOOD_CROPS, world.getName());
 
         // FEATURE:
-        if (weakCropsEnabled && plugin.getModuleForClass(BlockModule.class).plantDies(event.getBlock(), event.getNewState().getData()))
+        if (!weakCropsEnabled)
+            return;
+
+        Block block = event.getBlock();
+        plugin.debug(block.getWorld(), "BlockGrowEvent block material: " + block.getType().name() + ", location: " + block.getLocation());
+        MaterialData newStateData = event.getNewState().getData();
+        plugin.debug(block.getWorld(), "Successfully retrieved getNewState#getData");
+        if (weakCropsEnabled && plugin.getModuleForClass(BlockModule.class).plantDies(block, newStateData))
         {
             event.setCancelled(true);
             //shrub gets removed on farmland
