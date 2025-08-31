@@ -187,9 +187,11 @@ public class AntiFarming extends ListenerModule
 
         Block block = event.getBlock();
         plugin.debug(block.getWorld(), "BlockGrowEvent block material: " + block.getType().name() + ", location: " + block.getLocation());
-        MaterialData newStateData = event.getNewState().getData();
-        plugin.debug(block.getWorld(), "Successfully retrieved getNewState#getData");
-        if (weakCropsEnabled && plugin.getModuleForClass(BlockModule.class).plantDies(block, newStateData))
+        
+        Material newState = event.getNewState().getType();
+        plugin.debug(block.getWorld(), "New state material: " + newState.name());
+        
+        if (weakCropsEnabled && plugin.getModuleForClass(BlockModule.class).plantDies(block, new MaterialData(newState)))
         {
             event.setCancelled(true);
             //shrub gets removed on farmland
