@@ -38,6 +38,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -104,13 +106,20 @@ public class UtilityModule extends EHMModule
 
         if (damagePerBlock > 0 || percent > 0.0D)
         {
-            int durability = item.getDurability();
-            durability += damagePerBlock;
+            ItemMeta meta = item.getItemMeta();
+            int damage = 0;
+            if (meta instanceof Damageable) {
+                damage = ((Damageable) meta).getDamage();
+            }
+            damage += damagePerBlock;
 
             if (OurRandom.nextDouble() < percent)
-                durability += (damagePerBlock > 0 ? damagePerBlock : 1);
+                damage += (damagePerBlock > 0 ? damagePerBlock : 1);
 
-            item.setDurability((short) durability);
+            if (meta instanceof Damageable) {
+                ((Damageable) meta).setDamage(damage);
+                item.setItemMeta(meta);
+            }
         }
         return item;
     }

@@ -48,6 +48,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -209,14 +211,20 @@ public class Players extends ListenerModule
                         //Damage valuable tools instead of completely destroying them
                         if (tool == item.getType())
                         {
-                            short dur = item.getDurability();
+                            ItemMeta meta = item.getItemMeta();
+                            int dur = 0;
+                            if (meta instanceof Damageable) {
+                                dur = ((Damageable) meta).getDamage();
+                            }
                             short maxDurability = item.getType().getMaxDurability();
                             dur += maxDurability / 100 * toolDmgPercent;
                             //Prevent complete destroyal of heavily damaged items
                             if (dur >= maxDurability && !destroyTools)
-                                dur = --maxDurability;
-                            item.setDurability(dur);
-                            continue outer;
+                                dur = maxDurability - 1;
+                            if (meta instanceof Damageable) {
+                                ((Damageable) meta).setDamage(dur);
+                                item.setItemMeta(meta);
+                            }
                         }
                     }
                     evntDrops.remove(item);

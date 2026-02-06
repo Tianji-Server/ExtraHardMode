@@ -24,6 +24,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -244,11 +245,17 @@ public class Tutorial extends ListenerModule
             //Too dark
             if (block.getType() == Material.FARMLAND)
             {
-                Block above = block.getRelative(BlockFace.UP);
-                if (above.getLightFromSky() < 10)
-                {
-                    messenger.send(player, MessageNode.ANTIFARMING_NO_LIGHT);
+            Block below = block.getRelative(BlockFace.DOWN);
+
+            //Unwatered
+            if (blockModule.isPlant(block.getType())) {
+                if (below.getBlockData() instanceof Farmland) {
+                    Farmland farmland = (Farmland) below.getBlockData();
+                    if (farmland.getMoisture() == 0) {
+                        messenger.send(player, MessageNode.ANTIFARMING_UNWATERD);
+                    }
                 }
+            }
             }
 
             Block below = block.getRelative(BlockFace.DOWN);
