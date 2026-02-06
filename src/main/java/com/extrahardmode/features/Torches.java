@@ -134,15 +134,7 @@ public class Torches extends ListenerModule
 
                 switch (attachmentMaterial)
                 {
-                    case DIRT:
-                    case GRASS_BLOCK:
-                    case GRASS:
-                    case SAND:
-                    case GRAVEL:
-                    case COARSE_DIRT:
-                    case MYCELIUM:
-                    case PODZOL:
-                    case SOUL_SAND:
+                    case DIRT, GRASS_BLOCK, SAND, GRAVEL, COARSE_DIRT, MYCELIUM, PODZOL, SOUL_SAND:
                         if (soundFizzEnabled)
                             messenger.send(player, MessageNode.LIMITED_TORCH_PLACEMENTS, PermissionNode.SILENT_LIMITED_TORCH_PLACEMENT, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE , 20);
                         placeEvent.setCancelled(true);

@@ -142,15 +142,7 @@ public class RemoveExposedTorchesTask implements Runnable
                             case ATTACHED_MELON_STEM:
                             case MELON:
                             case CARROTS:
-                            case PUMPKIN_STEM:
-                            case ATTACHED_PUMPKIN_STEM:
-                            case PUMPKIN: //I followed suit with the melon and added pumpkin
-                            case POTATOES:
-                            case ROSE_BUSH: //RED_ROSE //ROSE_RED
-                            case DANDELION: //YELLOW FLOWER
-                            case GRASS: //I still can't recall if the replacement for LONG_GRASS is GRASS or TALL_GRASS...
-                            case TALL_GRASS:
-                            case BEETROOTS:
+                            case PUMPKIN_STEM, ATTACHED_PUMPKIN_STEM, PUMPKIN, POTATOES, ROSE_BUSH, DANDELION, TALL_GRASS, BEETROOTS:
                             {
                                 if (snowBreaksCrops && temperature <= 0.15) //cold biomes in which snow falls
                                 {

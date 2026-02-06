@@ -14,8 +14,10 @@ import com.extrahardmode.service.ListenerModule;
 import com.extrahardmode.task.WeightCheckTask;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +26,6 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -245,6 +246,13 @@ public class Tutorial extends ListenerModule
             //Too dark
             if (block.getType() == Material.FARMLAND)
             {
+                Block above = block.getRelative(BlockFace.UP);
+                if (above.getLightFromSky() < 10)
+                {
+                    messenger.send(player, MessageNode.ANTIFARMING_NO_LIGHT);
+                }
+            }
+
             Block below = block.getRelative(BlockFace.DOWN);
 
             //Unwatered
@@ -256,28 +264,16 @@ public class Tutorial extends ListenerModule
                     }
                 }
             }
-            }
-
-            Block below = block.getRelative(BlockFace.DOWN);
-
-            //Unwatered
-            if (blockModule.isPlant(block.getType()) && below.getState().getData().getData() == (byte) 0)
-            {
-                messenger.send(player, MessageNode.ANTIFARMING_UNWATERD);
-            }
 
             //Warn players before they build big farms in the desert
             if (block.getType() == Material.DIRT)
             {
                 try
                 {
-                    switch (block.getBiome())
+                    Biome biome = block.getBiome();
+                    if (biome.name().contains("DESERT"))
                     {
-                        case DESERT:
-                        {
-                            messenger.send(player, MessageNode.ANTIFARMING_DESSERT_WARNING);
-                            break;
-                        }
+                        messenger.send(player, MessageNode.ANTIFARMING_DESSERT_WARNING);
                     }
                 }
                 catch (IllegalArgumentException e) {} //ignore custom biomes

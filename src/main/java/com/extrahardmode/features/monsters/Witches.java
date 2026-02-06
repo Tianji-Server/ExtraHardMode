@@ -84,7 +84,7 @@ public class Witches extends ListenerModule
 
         // FEATURE: more witches above ground (on grass)
         if (entityType == EntityType.ZOMBIE && world.getEnvironment() == World.Environment.NORMAL
-                && entity.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.GRASS
+                && entity.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.GRASS_BLOCK
                 && event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NATURAL)
         {
             if (plugin.random(witchSpawnPercent))

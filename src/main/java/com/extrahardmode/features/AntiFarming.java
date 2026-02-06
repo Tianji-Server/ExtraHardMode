@@ -315,13 +315,14 @@ public class AntiFarming extends ListenerModule
 
         if (restrictedSquidSpawns && entity.getType() == EntityType.SQUID && reason.equals(CreatureSpawnEvent.SpawnReason.NATURAL))
         {
-            switch (entity.getLocation().getBlock().getBiome())
+            Biome biome = entity.getLocation().getBlock().getBiome();
+            String biomeName = biome.name();
+            if (biomeName.contains("OCEAN") || biomeName.contains("WATER"))
             {
-                case DEEP_OCEAN:
-                case OCEAN:
-                    return;
-                default:
-                    event.setCancelled(true);
+                return;
+            } else
+            {
+                event.setCancelled(true);
             }
         }
     }

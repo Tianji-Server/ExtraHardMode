@@ -15,6 +15,6 @@ public class FakeEntityExplodeEvent extends EntityExplodeEvent
 {
     public FakeEntityExplodeEvent(Entity what, Location location, List<Block> blocks, float yield)
     {
-        super(what, location, blocks, yield);
+        super(what, location, blocks, yield, null);
     }
 }
