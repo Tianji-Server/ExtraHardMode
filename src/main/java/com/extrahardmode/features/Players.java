@@ -140,13 +140,15 @@ public class Players extends ListenerModule
         World world = player.getWorld();
 
         final boolean playerBypasses = playerModule.playerBypasses(player, Feature.RESPAWN_FOOD_HEALTH);
+        //the master switch of this feature was never read, so it was always on
+        final boolean respawnHealthEnabled = CFG.getBoolean(RootNode.PLAYER_RESPAWN_HEALTH_ENABLE, world.getName());
 
         final int respawnHealthPercentage = playerBypasses ? 100
                 : CFG.getInt(RootNode.PLAYER_RESPAWN_HEALTH_PERCENTAGE, world.getName());
         final int respawnFood = playerBypasses ? 20
                 : CFG.getInt(RootNode.PLAYER_RESPAWN_FOOD_LEVEL, world.getName());
 
-        if (respawnFood < 20 && respawnHealthPercentage > 0 && respawnHealthPercentage < 100)
+        if (respawnHealthEnabled && respawnFood < 20 && respawnHealthPercentage > 0 && respawnHealthPercentage < 100)
         {
             //TODO HIGH EhmPlayerRespawnEvent
             SetPlayerHealthAndFoodTask task = new SetPlayerHealthAndFoodTask(player, (int) player.getMaxHealth() * respawnHealthPercentage / 100, respawnFood);

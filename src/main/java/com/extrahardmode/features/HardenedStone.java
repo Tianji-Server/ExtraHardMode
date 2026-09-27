@@ -34,6 +34,7 @@ import com.extrahardmode.module.UtilityModule;
 import com.extrahardmode.service.Feature;
 import com.extrahardmode.service.ListenerModule;
 import com.extrahardmode.service.PermissionNode;
+import com.extrahardmode.service.config.MultiWorldConfig;
 import com.extrahardmode.service.config.customtypes.BlockRelationsList;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -115,7 +116,7 @@ public class HardenedStone extends ListenerModule
             for (String tool : tools)
             {
                 String[] parsedTool = tool.split("@");
-                Material material = Material.matchMaterial(parsedTool[0]);
+                Material material = MultiWorldConfig.materialFromName(parsedTool[0]);
                 if (material == null)
                 {
                     plugin.getLogger().warning("Material " + parsedTool[0] + " does not exist. Please remove this entry from Mining.Inhibit Tunneling.");
@@ -126,7 +127,7 @@ public class HardenedStone extends ListenerModule
 
                 if (parsedTool.length > 2)
                 {
-                    int unbreakingDurability = Integer.parseInt(parsedTool[1]);
+                    int unbreakingDurability = Integer.parseInt(parsedTool[2]);
                     toolUnbreakingMap.put(material, unbreakingDurability);
                 }
             }

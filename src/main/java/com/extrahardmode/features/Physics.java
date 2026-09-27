@@ -174,7 +174,9 @@ public class Physics extends ListenerModule
             newState.setType(event.getTo());
             CompatHandler.logFallingBlockLand(newState);
 
-            blockModule.physicsCheck(event.getBlock().getRelative(BlockFace.DOWN), 10, false, 1);
+            //FEATURE: cascading falling blocks - the config node was never read, so the option had no effect
+            if (CFG.getBoolean(RootNode.MORE_FALLING_BLOCKS_CASCADE, event.getBlock().getWorld().getName()))
+                blockModule.physicsCheck(event.getBlock().getRelative(BlockFace.DOWN), 10, false, 1);
         }
     }
 

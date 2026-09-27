@@ -176,7 +176,7 @@ public class Glydia extends ListenerModule
         {
             if (glydiaDropsEggs)
             {
-                ItemStack itemStack = new ItemStack(Material.VILLAGER_SPAWN_EGG, 2, (short) 120);
+                ItemStack itemStack = new ItemStack(Material.VILLAGER_SPAWN_EGG, 2);
                 world.dropItemNaturally(entity.getLocation().add(10, 0, 0), itemStack);
             }
 
@@ -480,7 +480,7 @@ public class Glydia extends ListenerModule
     	                    Location location = fireball.getLocation().add(0, 1, 0);
     	                    for (int i = 0; i < 10; i++)
     	                    {
-    	                        FallingBlock fire = world.spawnFallingBlock(location, Material.FIRE, (byte) 0);
+    	                        FallingBlock fire = world.spawnFallingBlock(location, Material.FIRE.createBlockData());
     	                        Vector velocity = Vector.getRandom();
     	                        if (velocity.getY() < 0)
     	                        {
@@ -548,7 +548,7 @@ public class Glydia extends ListenerModule
                          Location location = fireball.getLocation().add(0, 1, 0);
                          for (int i = 0; i < 10; i++)
                          {
-                             FallingBlock fire = world.spawnFallingBlock(location, Material.FIRE, (byte) 0);
+                             FallingBlock fire = world.spawnFallingBlock(location, Material.FIRE.createBlockData());
                              Vector velocity = Vector.getRandom();
                              if (velocity.getY() < 0)
                              {

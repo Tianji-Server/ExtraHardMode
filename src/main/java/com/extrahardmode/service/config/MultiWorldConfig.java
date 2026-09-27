@@ -34,6 +34,8 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +60,13 @@ public abstract class MultiWorldConfig extends EHMModule
 
     private Table<String/*world*/, ConfigNode, Object> OPTIONS;
 
+    /**
+     * Already parsed material lists. Material names are expensive to parse (see {@link #materialFromName(String)}) and
+     * {@link #getStringListAsMaterialList(ConfigNode, String)} is called from hot event handlers, so the parsed results
+     * are kept until the config is set again.
+     */
+    private Table<String/*world*/, ConfigNode, List<Material>> parsedMaterialLists = HashBasedTable.create();
+
 
     /**
      * Constructor.
@@ -77,6 +86,7 @@ public abstract class MultiWorldConfig extends EHMModule
     protected void init()
     {
         OPTIONS = HashBasedTable.create();
+        parsedMaterialLists = HashBasedTable.create();
     }
 
 
@@ -91,6 +101,8 @@ public abstract class MultiWorldConfig extends EHMModule
     {
         Validate.notNull(node, "Supplied ConfigNode was null - world: " + world + " value: " + value);
         Validate.notNull(world, "Supplied World was null - node: " + node + " value: " + value);
+        //Any change invalidates the lazily parsed material lists
+        parsedMaterialLists.clear();
         switch (node.getVarType())
         {
             case LIST:
@@ -449,6 +461,12 @@ public abstract class MultiWorldConfig extends EHMModule
     @Deprecated //Should encourage use of getStringList, since this is performing an unchecked cast?
     public List<Material> getStringListAsMaterialList(final ConfigNode node, final String world)
     {
+        //Parsing material names is expensive (see materialFromName) and this method is called on hot paths,
+        //so hand out the cached result until the config is changed
+        List<Material> cached = parsedMaterialLists.get(world, node);
+        if (cached != null)
+            return cached;
+
         List<Material> blockList = new ArrayList<>();
 
         switch (node.getVarType())
@@ -461,10 +479,13 @@ public abstract class MultiWorldConfig extends EHMModule
                 else if (enabledForAll)
                     obj = OPTIONS.get(ALL_WORLDS, node);
                 if (!(obj instanceof List))
+                {
+                    parsedMaterialLists.put(world, node, blockList);
                     break;
+                }
                 for (String materialName : (List<String>) obj)
                 {
-                    Material material = Material.matchMaterial(materialName);
+                    Material material = materialFromName(materialName);
                     if (material == null)
                     {
                         plugin.getLogger().warning(materialName + " is not a valid material. Please fix or remove from config.yml " + node.getPath());
@@ -473,6 +494,7 @@ public abstract class MultiWorldConfig extends EHMModule
                     blockList.add(material);
                 }
 
+                parsedMaterialLists.put(world, node, blockList);
                 break;
             }
             default:
@@ -481,6 +503,37 @@ public abstract class MultiWorldConfig extends EHMModule
             }
         }
         return blockList;
+    }
+
+
+    /** Cache for {@link #materialFromName(String)}, allows caching of unknown names as well */
+    private static final Map<String, Material> MATERIAL_NAMES = Collections.synchronizedMap(new HashMap<String, Material>());
+
+
+    /**
+     * Cached variant of {@link Material#matchMaterial(String)}.
+     * <p/>
+     * Material#matchMaterial is surprisingly expensive: it uppercases the given name and compiles + runs two regular
+     * expressions (\s+ and \W) on every single call. Because EHM parses material names from the config inside event
+     * handlers, the results - including unknown names - are cached here.
+     * <p/>
+     * This method doesn't log anything, warning about unknown names is up to the caller.
+     *
+     * @param name - material name as written in the config
+     *
+     * @return the Material or null if the name is unknown
+     */
+    public static Material materialFromName(String name)
+    {
+        if (name == null)
+            return null;
+
+        if (MATERIAL_NAMES.containsKey(name))
+            return MATERIAL_NAMES.get(name);
+
+        Material material = Material.matchMaterial(name);
+        MATERIAL_NAMES.put(name, material);
+        return material;
     }
 
     @Deprecated

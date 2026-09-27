@@ -1,14 +1,18 @@
 package com.extrahardmode.mocks;
 
 
+import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Server;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -89,7 +93,7 @@ public final class BukkitTestBootstrap
 
 
     @SuppressWarnings("unchecked")
-    private static <T extends org.bukkit.Keyed> Registry<T> createFallbackRegistry()
+    static <T extends org.bukkit.Keyed> Registry<T> createFallbackRegistry()
     {
         return (Registry<T>) Proxy.newProxyInstance(
                 BukkitTestBootstrap.class.getClassLoader(),
@@ -99,7 +103,7 @@ public final class BukkitTestBootstrap
 
 
     @SuppressWarnings("unchecked")
-    private static Registry<PotionEffectType> createPotionRegistry()
+    static Registry<PotionEffectType> createPotionRegistry()
     {
         return (Registry<PotionEffectType>) Proxy.newProxyInstance(
                 BukkitTestBootstrap.class.getClassLoader(),
@@ -182,7 +186,7 @@ public final class BukkitTestBootstrap
         {
             String methodName = method.getName();
             if ("get".equals(methodName) || "getOrThrow".equals(methodName))
-                return getOrCreateEffect(effects, (NamespacedKey) args[0]);
+                return getOrCreateEffect(effects, toNamespacedKey(args[0]));
             if ("match".equals(methodName))
             {
                 String input = (String) args[0];
@@ -205,6 +209,221 @@ public final class BukkitTestBootstrap
             if ("equals".equals(methodName))
                 return proxy == args[0];
             throw new UnsupportedOperationException("Unsupported registry method: " + methodName);
+        }
+    }
+
+
+    /** paper-api looks registries up with either a NamespacedKey or with any adventure Key */
+    private static NamespacedKey toNamespacedKey(Object key)
+    {
+        if (key instanceof NamespacedKey)
+            return (NamespacedKey) key;
+        if (key instanceof Key)
+            return NamespacedKey.fromString(((Key) key).asString());
+        return NamespacedKey.fromString(String.valueOf(key));
+    }
+
+
+    /**
+     * Registry that hands out stubs of the given type. paper-api resolves Material#asItemType()/asBlockType()
+     * through the item/block registry, so an empty registry would make every Material "not an item".
+     */
+    @SuppressWarnings("unchecked")
+    static <T extends org.bukkit.Keyed> Registry<T> createTypeRegistry(final Class<?> typeClass)
+    {
+        return (Registry<T>) Proxy.newProxyInstance(
+                BukkitTestBootstrap.class.getClassLoader(),
+                new Class<?>[]{Registry.class},
+                new TypeRegistryHandler(typeClass));
+    }
+
+
+    private static final class TypeRegistryHandler implements InvocationHandler
+    {
+        private final Class<?> typeClass;
+        private final Map<String, Object> types = new ConcurrentHashMap<String, Object>();
+
+
+        private TypeRegistryHandler(Class<?> typeClass)
+        {
+            this.typeClass = typeClass;
+        }
+
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+        {
+            String methodName = method.getName();
+            if ("get".equals(methodName) || "getOrThrow".equals(methodName))
+                return getOrCreateType(toNamespacedKey(args[0]));
+            if ("match".equals(methodName))
+            {
+                String input = args[0] == null ? null : String.valueOf(args[0]).toLowerCase(Locale.ROOT);
+                if (input == null)
+                    return null;
+
+                NamespacedKey key = NamespacedKey.fromString(input);
+                return getOrCreateType(key != null ? key : NamespacedKey.minecraft(input));
+            }
+            if ("stream".equals(methodName))
+                return types.values().stream();
+            if ("iterator".equals(methodName))
+                return types.values().iterator();
+            if ("toString".equals(methodName))
+                return typeClass.getSimpleName() + "RegistryProxy";
+            if ("hashCode".equals(methodName))
+                return System.identityHashCode(proxy);
+            if ("equals".equals(methodName))
+                return proxy == args[0];
+            throw new UnsupportedOperationException("Unsupported registry method: " + methodName);
+        }
+
+
+        private Object getOrCreateType(NamespacedKey key)
+        {
+            if (key == null)
+                return null;
+
+            return types.computeIfAbsent(key.toString(), ignored -> Proxy.newProxyInstance(
+                    BukkitTestBootstrap.class.getClassLoader(),
+                    new Class<?>[]{typeClass},
+                    new TypeHandler(key)));
+        }
+    }
+
+
+    /** Stub for ItemType/BlockType, answers the few queries the plugin asks and stays neutral for the rest */
+    private static final class TypeHandler implements InvocationHandler
+    {
+        private final NamespacedKey key;
+
+
+        private TypeHandler(NamespacedKey key)
+        {
+            this.key = key;
+        }
+
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+        {
+            String methodName = method.getName();
+            if ("getMaxStackSize".equals(methodName))
+                return 64;
+            if ("getMaxDurability".equals(methodName))
+                return (short) 1561;
+            if ("createItemStack".equals(methodName))
+                return new TestItemStack(Material.matchMaterial(key.getKey()), args.length > 0 ? (Integer) args[0] : 1);
+            if ("key".equals(methodName) || "getKey".equals(methodName))
+                return key;
+            if ("getTranslationKey".equals(methodName) || "translationKey".equals(methodName) || "getName".equals(methodName))
+                return key.getKey();
+            if ("asMaterial".equals(methodName))
+                return Material.matchMaterial(key.getKey());
+            if ("toString".equals(methodName))
+                return "TestType(" + key + ")";
+            if ("hashCode".equals(methodName))
+                return System.identityHashCode(proxy);
+            if ("equals".equals(methodName))
+                return proxy == args[0];
+            return defaultValue(method.getReturnType());
+        }
+
+
+        private static Object defaultValue(Class<?> returnType)
+        {
+            if (!returnType.isPrimitive() || returnType == void.class)
+                return null;
+            if (returnType == boolean.class)
+                return Boolean.FALSE;
+            if (returnType == char.class)
+                return (char) 0;
+            if (returnType == float.class)
+                return 0.0F;
+            if (returnType == double.class)
+                return 0.0D;
+            if (returnType == long.class)
+                return 0L;
+            if (returnType == byte.class)
+                return (byte) 0;
+            if (returnType == short.class)
+                return (short) 0;
+            return 0;
+        }
+    }
+
+
+    /**
+     * Stub item stack for the tests. paper-api's ItemStack only holds a delegate that is created by the ItemType,
+     * which needs a running server, so the stubs answer the queries EHM asks themselves.
+     */
+    private static final class TestItemStack extends ItemStack
+    {
+        private final Material type;
+        private int amount;
+        private short durability;
+
+
+        private TestItemStack(Material type, int amount)
+        {
+            this.type = type;
+            this.amount = amount;
+        }
+
+
+        @Override
+        public Material getType()
+        {
+            return type;
+        }
+
+
+        @Override
+        public int getAmount()
+        {
+            return amount;
+        }
+
+
+        @Override
+        public void setAmount(int amount)
+        {
+            this.amount = amount;
+        }
+
+
+        @Override
+        public int getMaxStackSize()
+        {
+            return 64;
+        }
+
+
+        @Override
+        public short getDurability()
+        {
+            return durability;
+        }
+
+
+        @Override
+        public void setDurability(short durability)
+        {
+            this.durability = durability;
+        }
+
+
+        @Override
+        public boolean hasItemMeta()
+        {
+            return false;
+        }
+
+
+        @Override
+        public String toString()
+        {
+            return amount + " x " + type;
         }
     }
 
@@ -288,23 +507,30 @@ public final class BukkitTestBootstrap
 
 
         @Override
-        public NamespacedKey getKeyOrThrow()
+        public String translationKey()
         {
-            return key;
+            return "effect.minecraft." + key.getKey();
         }
 
 
         @Override
-        public NamespacedKey getKeyOrNull()
+        public PotionEffectType.Category getEffectCategory()
         {
-            return key;
+            return PotionEffectType.Category.NEUTRAL;
         }
 
 
         @Override
-        public boolean isRegistered()
+        public Map<Attribute, AttributeModifier> getEffectAttributes()
         {
-            return true;
+            return Map.of();
+        }
+
+
+        @Override
+        public double getAttributeModifierAmount(Attribute attribute, int amplifier)
+        {
+            return 0.0;
         }
     }
 }

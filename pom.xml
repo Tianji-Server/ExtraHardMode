@@ -39,6 +39,8 @@
         <outputdir>${project.build.outputDirectory}</outputdir>
         <mc-version>26.1.2</mc-version>
         <bukkit-ver>R0.1-SNAPSHOT</bukkit-ver>
+        <!--Paper API version to compile against, matches the target Leaf/Paper server-->
+        <paper-version>26.2.build.112-stable</paper-version>
         <testDir>${basedir}/src/test/</testDir>
         <srcDir>${basedir}/src/main/java/</srcDir>
     </properties>
@@ -202,6 +204,11 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <!-- Paper (paper-api) -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
         <!--WorldGuard Repo -->
         <repository>
             <id>enginehub-repo</id>
@@ -238,11 +245,11 @@
 
     <!-- Dependencies -->
     <dependencies>
-        <!-- Spigot -->
+        <!-- Paper API (superset of the Bukkit/Spigot API, provided by the server at runtime) -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${mc-version}-${bukkit-ver}</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper-version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- CraftBukkit -> because we are too lazy to add the jar to our build path for runtime debugging :D -->

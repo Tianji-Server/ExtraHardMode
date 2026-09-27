@@ -96,7 +96,8 @@ public class Blazes extends ListenerModule
                 entityType = EntityType.BLAZE;
 
                 // FEATURE: magma cubes spawn with blazes
-                if (plugin.random(bonusNetherBlazeSpawnPercent))
+                //(this used the blaze spawn chance instead of the specialized node, so the config option did nothing)
+                if (plugin.random(CFG.getInt(RootNode.FLAME_SLIMES_SPAWN_WITH_NETHER_BLAZE_PERCENT, world.getName())))
                 {
                     MagmaCube cube = (MagmaCube) (EntityHelper.spawn(location, EntityType.MAGMA_CUBE));
                     cube.setSize(1);

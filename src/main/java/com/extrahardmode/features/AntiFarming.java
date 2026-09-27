@@ -119,28 +119,29 @@ public class AntiFarming extends ListenerModule
 
 
     /**
-     * When a player breaks a block...
+     * When a block is about to drop its items...
      * <p/>
      * no netherwart farming
      */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onBlockBreak(BlockBreakEvent breakEvent)
+    public void onBlockDropItems(BlockDropItemEvent event)
     {
-        Player player = breakEvent.getPlayer();
-        Block block = breakEvent.getBlock();
-        World world = block.getWorld();
+        World world = event.getBlock().getWorld();
 
         final boolean noFarmingNetherWart = CFG.getBoolean(RootNode.NO_FARMING_NETHER_WART, world.getName());
-        final boolean playerBypasses = playerModule.playerBypasses(player, Feature.ANTIFARMING);
+        final boolean playerBypasses = playerModule.playerBypasses(event.getPlayer(), Feature.ANTIFARMING);
 
         // FEATURE: no nether wart farming (always drops exactly 1 nether wart when broken)
-        if (!playerBypasses && noFarmingNetherWart)
+        if (playerBypasses || !noFarmingNetherWart || event.getBlock().getType() != Material.NETHER_WART)
+            return;
+
+        //Block#getDrops() hands out a freshly calculated copy, so changing it never had any effect. The drops have
+        //to be trimmed where they are actually carried: on the event that reports the spawned drop entities.
+        for (Item item : event.getItems())
         {
-            if (block.getType() == Material.NETHER_WART)
-            {
-                block.getDrops().clear();
-                block.getDrops().add(new ItemStack(Material.NETHER_WART));
-            }
+            ItemStack stack = item.getItemStack();
+            if (stack.getType() == Material.NETHER_WART && stack.getAmount() > 1)
+                item.setItemStack(new ItemStack(Material.NETHER_WART, 1));
         }
     }
 
@@ -186,7 +187,11 @@ public class AntiFarming extends ListenerModule
             return;
 
         Block block = event.getBlock();
-        plugin.debug(block.getWorld(), "BlockGrowEvent block material: " + block.getType().name() + ", location: " + block.getLocation());
+        //BlockGrowEvent fires on random ticks, so only build the diagnostic strings when debugging is actually on
+        if (CFG.getBoolean(RootNode.DEBUG, world.getName()))
+        {
+            plugin.debug(block.getWorld(), "BlockGrowEvent block material: " + block.getType().name() + ", location: " + block.getLocation());
+        }
         //Use BlockData instead of the deprecated BlockState#getData(). The legacy MaterialData API initializes
         //CraftLegacy, whose static initializer runs the whole DataFixer chain on the server thread => watchdog freeze
         BlockData newStateData = event.getNewState().getBlockData();
