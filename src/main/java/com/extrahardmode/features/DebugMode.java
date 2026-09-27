@@ -70,7 +70,7 @@ public class DebugMode extends ListenerModule
             msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 5, 0, ChatColor.RED, null, "EHM DEBUGMODE", "Humidity: " + twoDecimalPlaces.format(target.getHumidity()));
             msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 4, 0, ChatColor.RED, null, "EHM DEBUGMODE", "Temp: " + twoDecimalPlaces.format(target.getTemperature()));
             msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 3, 0, ChatColor.RED, null, "EHM DEBUGMODE", "Biome: " + target.getBiome().name());
-            msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 2, 0, ChatColor.RED, null, "EHM DEBUGMODE", "Data: " + target.getData());
+            msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 2, 0, ChatColor.RED, null, "EHM DEBUGMODE", "Data: " + target.getBlockData().getAsString());
             msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 1, 0, ChatColor.RED, null, "EHM DEBUGMODE", target.getType().name());
             msgModule.getManager().showPopup(player.getName(), key_blockdata_msg + 0, 0, ChatColor.RED, null, "EHM DEBUGMODE", "CURSOR BLOCK");
         }

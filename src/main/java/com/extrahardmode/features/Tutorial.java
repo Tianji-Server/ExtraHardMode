@@ -16,6 +16,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -253,8 +255,15 @@ public class Tutorial extends ListenerModule
 
             Block below = block.getRelative(BlockFace.DOWN);
 
-            //Unwatered
-            if (blockModule.isPlant(block.getType()) && below.getState().getData().getData() == (byte) 0)
+            //Unwatered (moisture is only stored by farmland, every other block counts as dry)
+            int moistureLevel = 0;
+            BlockData belowData = below.getBlockData();
+            if (belowData instanceof Farmland)
+            {
+                moistureLevel = ((Farmland) belowData).getMoisture();
+            }
+
+            if (blockModule.isPlant(block.getType()) && moistureLevel == 0)
             {
                 messenger.send(player, MessageNode.ANTIFARMING_UNWATERD);
             }

@@ -36,9 +36,11 @@ import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.ArrayList;
@@ -193,11 +195,11 @@ public class BlockModule extends EHMModule
      * Check if the given plant at the block should die.
      *
      * @param block        - Block to check.
-     * @param newDataValue - Data value to replace.
+     * @param newDataValue - BlockData the plant will have once it has grown (as provided by the grow event).
      *
      * @return True if plant should die, else false.
      */
-    public boolean plantDies(Block block, MaterialData newDataValue)
+    public boolean plantDies(Block block, BlockData newDataValue)
     {
         World world = block.getWorld();
 
@@ -206,66 +208,62 @@ public class BlockModule extends EHMModule
         final boolean aridDesertsEnabled = CFG.getBoolean(RootNode.ARID_DESSERTS, world.getName());
 
 
-        if (weakFoodCropsEnabled)
-        {
-            // not evaluated until the plant is nearly full grown
-            //For some plants (netherwart, beetroot), this is at data value 3.
+        if (!weakFoodCropsEnabled)
+            return false;
 
-            int fullGrowthValue = 7;
-            switch (block.getType())
+        // not evaluated until the plant is nearly full grown
+        switch (block.getType())
+        {
+            case BEETROOTS:
+            case WHEAT:
+            case CARROTS:
+            case POTATOES:
+                break;
+            default:
+                return false;
+        }
+
+        //Uses the modern Ageable API instead of the deprecated MaterialData (BlockState#getData / Block#getData).
+        //The legacy API initializes CraftLegacy, whose static initializer runs the whole DataFixer chain on the
+        //server thread, freezing the server for more than 10 seconds. "Fully grown" == reached the maximum age.
+        if (!(newDataValue instanceof Ageable))
+            return false;
+
+        Ageable grownCrop = (Ageable) newDataValue;
+        if (grownCrop.getAge() < grownCrop.getMaximumAge())
+            return false;
+
+        int deathProbability = lossRate;
+
+        // plants in the dark always die
+        if (block.getLightFromSky() < 10)
+        {
+            deathProbability = 100;
+        } else
+        {
+            Biome biome = block.getBiome();
+
+            // the desert environment is very rough on crops
+            if ((biome == Biome.DESERT) && aridDesertsEnabled)
             {
-                case BEETROOTS:
-                    fullGrowthValue = 3;
-                    break;
-                case WHEAT:
-                case CARROTS:
-                case POTATOES:
-                    break;
-                default:
-                    return false;
+                deathProbability += 50;
             }
 
-            //TODO: 1.13
-            if (newDataValue.getData() >= fullGrowthValue)
+            // unwatered crops are more likely to die
+            int moistureLevel = 0;
+            BlockData belowData = block.getRelative(BlockFace.DOWN).getBlockData();
+            if (belowData instanceof Farmland)
             {
-                    int deathProbability = lossRate;
+                moistureLevel = ((Farmland) belowData).getMoisture();
+            }
 
-                    // plants in the dark always die
-                    if (block.getLightFromSky() < 10)
-                    {
-                        deathProbability = 100;
-                    } else
-                    {
-                        Biome biome = block.getBiome();
-
-                        // the desert environment is very rough on crops
-                        if ((biome == Biome.DESERT) && aridDesertsEnabled)
-                        {
-                            deathProbability += 50;
-                        }
-
-                        // unwatered crops are more likely to die
-                        Block belowBlock = block.getRelative(BlockFace.DOWN);
-                        byte moistureLevel = 0;
-                        if (belowBlock.getType() == Material.FARMLAND)
-                        {
-                            moistureLevel = belowBlock.getData();
-                        }
-
-                        if (moistureLevel == 0)
-                        {
-                            deathProbability += 25;
-                        }
-                    }
-
-                    if (plugin.random(deathProbability))
-                    {
-                        return true;
-                    }
+            if (moistureLevel == 0)
+            {
+                deathProbability += 25;
             }
         }
 
-        return false;
+        return plugin.random(deathProbability);
     }
 
 

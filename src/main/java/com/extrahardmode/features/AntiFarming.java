@@ -38,6 +38,7 @@ import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -52,7 +53,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 /**
  * Antifarming module
@@ -187,8 +187,10 @@ public class AntiFarming extends ListenerModule
 
         Block block = event.getBlock();
         plugin.debug(block.getWorld(), "BlockGrowEvent block material: " + block.getType().name() + ", location: " + block.getLocation());
-        MaterialData newStateData = event.getNewState().getData();
-        plugin.debug(block.getWorld(), "Successfully retrieved getNewState#getData");
+        //Use BlockData instead of the deprecated BlockState#getData(). The legacy MaterialData API initializes
+        //CraftLegacy, whose static initializer runs the whole DataFixer chain on the server thread => watchdog freeze
+        BlockData newStateData = event.getNewState().getBlockData();
+        plugin.debug(block.getWorld(), "Successfully retrieved getNewState#getBlockData");
         if (weakCropsEnabled && plugin.getModuleForClass(BlockModule.class).plantDies(block, newStateData))
         {
             event.setCancelled(true);
