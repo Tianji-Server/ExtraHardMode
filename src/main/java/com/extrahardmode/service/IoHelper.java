@@ -4,6 +4,7 @@ package com.extrahardmode.service;
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.google.common.io.Files;
 
@@ -76,7 +77,8 @@ public class IoHelper
         try
         {
             //Read original file contents -> memstream
-            BufferedReader br = new BufferedReader(new FileReader(input));
+            //Always read as UTF-8, the platform default charset (e.g. GBK on chinese Windows) would mangle non-ASCII text
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input), StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null)

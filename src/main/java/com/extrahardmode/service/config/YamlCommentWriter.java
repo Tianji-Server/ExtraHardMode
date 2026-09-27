@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -29,7 +30,8 @@ public class YamlCommentWriter
         String[] nodes = new String[20];
         try
         {
-            br = new BufferedReader(new FileReader(input));
+            //Always read as UTF-8, the platform default charset (e.g. GBK on chinese Windows) would mangle non-ASCII text
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(input), StandardCharsets.UTF_8));
             writer = new OutputStreamWriter(memStream, Charset.forName("UTF-8").newEncoder());
 
             String line;
