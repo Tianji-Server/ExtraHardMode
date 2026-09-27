@@ -5,6 +5,7 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.Keyed;
 import org.bukkit.Registry;
+import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionEffectType;
@@ -29,6 +30,9 @@ public final class TestRegistryAccess implements RegistryAccess
     /** Registry key of the block registry */
     private static final String BLOCK = "block";
 
+    /** Registry key of the biome registry, {@code RegistryKey.BIOME} is named "worldgen/biome" */
+    private static final String BIOME = "worldgen/biome";
+
 
     @Override
     @SuppressWarnings("unchecked")
@@ -40,6 +44,8 @@ public final class TestRegistryAccess implements RegistryAccess
             return (Registry<T>) BukkitTestBootstrap.createTypeRegistry(ItemType.class);
         if (BlockType.class.equals(registryClass))
             return (Registry<T>) BukkitTestBootstrap.createTypeRegistry(BlockType.class);
+        if (Biome.class.equals(registryClass))
+            return (Registry<T>) BukkitTestBootstrap.createBiomeRegistry();
         return (Registry<T>) BukkitTestBootstrap.createFallbackRegistry();
     }
 
@@ -55,6 +61,8 @@ public final class TestRegistryAccess implements RegistryAccess
             return (Registry<T>) BukkitTestBootstrap.createTypeRegistry(ItemType.class);
         if (BLOCK.equals(key))
             return (Registry<T>) BukkitTestBootstrap.createTypeRegistry(BlockType.class);
+        if (BIOME.equals(key))
+            return (Registry<T>) BukkitTestBootstrap.createBiomeRegistry();
         return (Registry<T>) BukkitTestBootstrap.createFallbackRegistry();
     }
 }

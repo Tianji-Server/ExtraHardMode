@@ -43,22 +43,31 @@ import com.extrahardmode.features.Torches;
 import com.extrahardmode.features.Tutorial;
 import com.extrahardmode.features.Water;
 import com.extrahardmode.features.monsters.Blazes;
+import com.extrahardmode.features.monsters.Bogged;
+import com.extrahardmode.features.monsters.Breeze;
 import com.extrahardmode.features.monsters.BumBumBens;
 import com.extrahardmode.features.monsters.CaveSpider;
+import com.extrahardmode.features.monsters.Creaking;
 import com.extrahardmode.features.monsters.Endermen;
 import com.extrahardmode.features.monsters.Ghasts;
 import com.extrahardmode.features.monsters.Glydia;
 import com.extrahardmode.features.monsters.Guardians;
+import com.extrahardmode.features.monsters.Hoglins;
 import com.extrahardmode.features.monsters.Horses;
 import com.extrahardmode.features.monsters.KillerBunny;
 import com.extrahardmode.features.monsters.MonsterRules;
+import com.extrahardmode.features.monsters.Parched;
+import com.extrahardmode.features.monsters.Phantoms;
 import com.extrahardmode.features.monsters.PigMen;
+import com.extrahardmode.features.monsters.PiglinBrutes;
 import com.extrahardmode.features.monsters.Silverfish;
 import com.extrahardmode.features.monsters.Skeletors;
 import com.extrahardmode.features.monsters.Spiders;
 import com.extrahardmode.features.monsters.Vex;
 import com.extrahardmode.features.monsters.Vindicator;
+import com.extrahardmode.features.monsters.Warden;
 import com.extrahardmode.features.monsters.Witches;
+import com.extrahardmode.features.monsters.Zoglins;
 import com.extrahardmode.features.monsters.Zombies;
 import com.extrahardmode.metrics.ConfigPlotter;
 import com.extrahardmode.module.BlockModule;
@@ -177,6 +186,17 @@ public class ExtraHardMode extends JavaPlugin
         registerModule(CaveSpider.class, new CaveSpider(this));
         registerModule(Guardians.class, new Guardians(this));
         registerModule(Vex.class, new Vex(this));
+
+        //Monster variants and mobs of newer Minecraft versions, they share the spawn events so the order matters
+        registerModule(Bogged.class, new Bogged(this));
+        registerModule(Parched.class, new Parched(this));
+        registerModule(Breeze.class, new Breeze(this));
+        registerModule(Warden.class, new Warden(this));
+        registerModule(Creaking.class, new Creaking(this));
+        registerModule(Phantoms.class, new Phantoms(this));
+        registerModule(Hoglins.class, new Hoglins(this));
+        registerModule(Zoglins.class, new Zoglins(this));
+        registerModule(PiglinBrutes.class, new PiglinBrutes(this));
         
         //Compatibility
         registerModule(CompatHandler.class, new CompatHandler(this));

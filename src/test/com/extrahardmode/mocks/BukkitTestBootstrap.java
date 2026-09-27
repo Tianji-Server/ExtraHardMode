@@ -10,6 +10,7 @@ import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
@@ -350,6 +351,131 @@ public final class BukkitTestBootstrap
                 return (short) 0;
             return 0;
         }
+    }
+
+
+    /**
+     * Registry for the biome registry.
+     * <p/>
+     * The {@link Biome} constants are resolved through this registry while the interface is initialized, so without a
+     * registry that answers the lookup the interface - and with it every biome constant - fails to initialize in the
+     * unit tests.
+     */
+    @SuppressWarnings("unchecked")
+    static Registry<Biome> createBiomeRegistry()
+    {
+        return (Registry<Biome>) Proxy.newProxyInstance(
+                BukkitTestBootstrap.class.getClassLoader(),
+                new Class<?>[]{Registry.class},
+                new BiomeRegistryHandler());
+    }
+
+
+    /** Registry which hands out biome stubs, cached by the key the caller asked for */
+    private static final class BiomeRegistryHandler implements InvocationHandler
+    {
+        private final Map<String, Object> biomes = new ConcurrentHashMap<String, Object>();
+
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+        {
+            String methodName = method.getName();
+            if ("get".equals(methodName) || "getOrThrow".equals(methodName) || "getOrNull".equals(methodName))
+                return getOrCreateBiome(args != null && args.length > 0 ? args[0] : null);
+            if ("stream".equals(methodName))
+                return biomes.values().stream();
+            if ("iterator".equals(methodName))
+                return biomes.values().iterator();
+            if ("toString".equals(methodName))
+                return "BiomeRegistryProxy";
+            if ("hashCode".equals(methodName))
+                return System.identityHashCode(proxy);
+            if ("equals".equals(methodName))
+                return proxy == args[0];
+            throw new UnsupportedOperationException("Unsupported registry method: " + methodName);
+        }
+
+
+        private Object getOrCreateBiome(Object key)
+        {
+            if (key == null)
+                return null;
+
+            return biomes.computeIfAbsent(String.valueOf(key), ignored -> Proxy.newProxyInstance(
+                    BukkitTestBootstrap.class.getClassLoader(),
+                    new Class<?>[]{Biome.class},
+                    new BiomeHandler(toBiomeKey(key))));
+        }
+
+
+        /** paper-api asks with an adventure key, a biome stub only ever needs namespace and value */
+        private static NamespacedKey toBiomeKey(Object key)
+        {
+            if (key instanceof NamespacedKey)
+                return (NamespacedKey) key;
+            if (key instanceof Key)
+                return new NamespacedKey(((Key) key).namespace(), ((Key) key).value());
+            return new NamespacedKey(NamespacedKey.MINECRAFT, String.valueOf(key));
+        }
+    }
+
+
+    /** Stub for a Biome, only its key is of interest to the plugin */
+    private static final class BiomeHandler implements InvocationHandler
+    {
+        private final NamespacedKey key;
+
+
+        private BiomeHandler(NamespacedKey key)
+        {
+            this.key = key;
+        }
+
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+        {
+            String methodName = method.getName();
+            if ("key".equals(methodName) || "getKey".equals(methodName))
+                return key;
+            if ("namespace".equals(methodName))
+                return key.getNamespace();
+            if ("value".equals(methodName))
+                return key.getKey();
+            if ("getTranslationKey".equals(methodName) || "translationKey".equals(methodName) || "getName".equals(methodName))
+                return key.getKey();
+            if ("toString".equals(methodName))
+                return "TestBiome(" + key + ")";
+            if ("hashCode".equals(methodName))
+                return System.identityHashCode(proxy);
+            if ("equals".equals(methodName))
+                return proxy == args[0];
+            return defaultValueFor(method.getReturnType());
+        }
+    }
+
+
+    /** @return the default value for a primitive return type, null for everything else */
+    static Object defaultValueFor(Class<?> returnType)
+    {
+        if (!returnType.isPrimitive() || returnType == void.class)
+            return null;
+        if (returnType == boolean.class)
+            return Boolean.FALSE;
+        if (returnType == char.class)
+            return (char) 0;
+        if (returnType == float.class)
+            return 0.0F;
+        if (returnType == double.class)
+            return 0.0D;
+        if (returnType == long.class)
+            return 0L;
+        if (returnType == byte.class)
+            return (byte) 0;
+        if (returnType == short.class)
+            return (short) 0;
+        return 0;
     }
 
 

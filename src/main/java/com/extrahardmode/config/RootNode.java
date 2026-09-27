@@ -27,6 +27,7 @@ import com.extrahardmode.service.config.MultiWorldConfig;
 import com.extrahardmode.service.config.customtypes.BlockRelationsList;
 import com.extrahardmode.service.config.customtypes.PotionEffectHolder;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
@@ -404,6 +405,12 @@ public enum RootNode implements ConfigNode
      */
     MORE_MONSTERS_MULTIPLIER("General Monster Rules.More Monsters.Multiplier", VarType.INTEGER, SubType.NATURAL_NUMBER, Disable.ONE, 2,
             "A simple multiplier to increase spawns under ground by increasing the packspawning size."),
+    /**
+     * monsters which should never get the bonus pack spawns
+     */
+    MORE_MONSTERS_EXCLUDED_TYPES("General Monster Rules.More Monsters.Excluded Types", VarType.LIST, new DefaultAmplificationExcluded(),
+            "Monsters listed here never get the extra 'More Monsters' pack spawns.",
+            "Without this a naturally spawned Warden or Breeze would drag a whole pack of monsters along."),
 
     /**
      * max y value for monsters to spawn in the light
@@ -759,6 +766,69 @@ public enum RootNode implements ConfigNode
      * percentage of bats which spawn as Vex.
      */
     BONUS_VEX_SPAWN_PERCENT("Vex.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 5),
+
+    /**
+     * ##############################
+     * # MONSTERS OF NEWER VERSIONS #
+     * ##############################
+     * Mobs which were added in newer Minecraft versions (1.19 - 26.2) and make the game harder
+     */
+    /**
+     * percentage of skeletons in swamps which spawn as a Bogged
+     */
+    BONUS_BOGGED_SPAWN_PERCENT("Bogged.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 20,
+            "A Bogged is the swamp variant of the skeleton and shoots poison arrows."),
+    /**
+     * percentage of skeletons in deserts and badlands which spawn as a Parched
+     */
+    BONUS_PARCHED_SPAWN_PERCENT("Parched.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 20,
+            "A Parched is the desert variant of the skeleton, no more easy nights in the desert."),
+    /**
+     * percentage of skeletons deep below Breeze.Max Y which spawn as a Breeze
+     */
+    BONUS_BREEZE_SPAWN_PERCENT("Breeze.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 5,
+            "A Breeze (1.21) throws wind charges which send you flying. Watch out for lava and cliffs."),
+    /**
+     * max y value for the Breeze replacement, 0 disables it
+     */
+    BREEZE_MAX_Y("Breeze.Max Y", VarType.INTEGER, SubType.Y_VALUE, Disable.ZERO, -16,
+            "Skeletons below this Y level may spawn as a Breeze instead. 0 disables the replacement."),
+    /**
+     * percentage of zombies deep below Warden.Max Y which spawn as a Warden
+     */
+    BONUS_WARDEN_SPAWN_PERCENT("Warden.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 0,
+            "The Warden (1.19) hits through walls and does not care about light. Only enable this if you hate your players."),
+    /**
+     * max y value for the Warden replacement, 0 disables it
+     */
+    WARDEN_MAX_Y("Warden.Max Y", VarType.INTEGER, SubType.Y_VALUE, Disable.ZERO, -48,
+            "Zombies below this Y level may spawn as a Warden instead. 0 disables the replacement."),
+    /**
+     * percentage of night time zombies on the surface which spawn as a Creaking
+     */
+    BONUS_CREAKING_SPAWN_PERCENT("Creaking.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 0,
+            "A Creaking (1.21.4) stands still while you look at it and can only be killed by destroying its heart.",
+            "Experimental, spawned Creaking are activated for nearby players. 0 disables it."),
+    /**
+     * percentage of zombified piglins in crimson forests which spawn as a Hoglin
+     */
+    BONUS_HOGLIN_SPAWN_PERCENT("Hoglin.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 10,
+            "Hoglins knock you back and shove you around, the crimson forest becomes a lot less cozy."),
+    /**
+     * percentage of zombified piglins in the nether which spawn as a Zoglin
+     */
+    BONUS_ZOGLIN_SPAWN_PERCENT("Zoglin.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 5,
+            "Zoglins attack everything they see, including other mobs. The nether gets messy."),
+    /**
+     * percentage of zombified piglins in the nether wastes which spawn as a Piglin Brute
+     */
+    BONUS_PIGLIN_BRUTE_SPAWN_PERCENT("PiglinBrute.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 5,
+            "Piglin Brutes hit hard enough to kill you in full diamond armor."),
+    /**
+     * percentage of night time bats which spawn as a Phantom
+     */
+    BONUS_PHANTOM_SPAWN_PERCENT("Phantom.Bonus Spawn Percent", VarType.INTEGER, SubType.PERCENTAGE, 5,
+            "Phantoms punish players which never sleep and dive at them from above."),
     /**
      * ################
      * # ENDER DRAGON #
@@ -1551,6 +1621,28 @@ public enum RootNode implements ConfigNode
         {
             super();
             this.add(MultiWorldConfig.ALL_WORLDS);
+        }
+    }
+
+
+    /**
+     * Default list of monsters which should not get the bonus pack spawns of the "More Monsters" feature.
+     * <p/>
+     * Those monsters are either already a fight of their own (Warden, Ravager, ...) or are injected by this plugin,
+     * piling a pack of zombies on top of them would just be unreasonable.
+     */
+    private static class DefaultAmplificationExcluded extends ArrayList<String>
+    {
+        public DefaultAmplificationExcluded()
+        {
+            super();
+            this.add(EntityType.WARDEN.name());
+            this.add(EntityType.BREEZE.name());
+            this.add(EntityType.CREAKING.name());
+            this.add(EntityType.RAVAGER.name());
+            this.add(EntityType.ELDER_GUARDIAN.name());
+            this.add(EntityType.WITHER.name());
+            this.add(EntityType.ENDER_DRAGON.name());
         }
     }
 }

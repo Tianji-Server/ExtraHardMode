@@ -29,6 +29,8 @@ import com.extrahardmode.mocks.MockWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +70,11 @@ public class MockCreatureSpawnEvent
      */
     private MockLocation location;
 
+    /**
+     * Whether the event got cancelled by the code under test
+     */
+    private boolean cancelled;
+
 
     /**
      * Constructor param entity Pass in an Entity with a mocked getWorld()-method
@@ -85,6 +92,23 @@ public class MockCreatureSpawnEvent
 
         when(cse.getEntity()).thenReturn(entity.get());
         when(cse.getSpawnReason()).thenReturn(reason);
+        when(cse.isCancelled()).thenAnswer(invocation -> cancelled);
+        doAnswer(invocation ->
+        {
+            cancelled = invocation.getArgument(0);
+            return null;
+        }).when(cse).setCancelled(anyBoolean());
+    }
+
+
+    /**
+     * Whether the code under test cancelled this event
+     *
+     * @return true if the spawn got cancelled
+     */
+    public boolean isCancelled()
+    {
+        return cse.isCancelled();
     }
 
 

@@ -22,8 +22,11 @@
 package com.extrahardmode.mocks;
 
 
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,5 +83,38 @@ public class MockWorld
     public World get()
     {
         return world;
+    }
+
+
+    /**
+     * Set the biome {@link World#getBiome(Location)} returns
+     *
+     * @param biome - biome to return
+     */
+    public void setBiome(Biome biome)
+    {
+        when(world.getBiome(any(Location.class))).thenReturn(biome);
+    }
+
+
+    /**
+     * Set the time of day of this world
+     *
+     * @param time - time in ticks, 13000 - 23000 is night
+     */
+    public void setTime(long time)
+    {
+        when(world.getTime()).thenReturn(time);
+    }
+
+
+    /**
+     * Set the sea level of this world
+     *
+     * @param seaLevel - Y level of the sea
+     */
+    public void setSeaLevel(int seaLevel)
+    {
+        when(world.getSeaLevel()).thenReturn(seaLevel);
     }
 }

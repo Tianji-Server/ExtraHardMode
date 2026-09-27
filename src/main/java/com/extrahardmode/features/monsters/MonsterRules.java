@@ -39,6 +39,8 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 
+import java.util.List;
+
 /**
  * Changes to how Monsters spawn including:
  */
@@ -50,6 +52,19 @@ public class MonsterRules extends ListenerModule
     public MonsterRules(ExtraHardMode plugin)
     {
         super(plugin);
+    }
+
+
+    /**
+     * Constructor for the unit tests, {@link #starting()} is not called
+     *
+     * @param plugin - the plugin
+     * @param CFG    - the config to use
+     */
+    MonsterRules(ExtraHardMode plugin, RootConfig CFG)
+    {
+        super(plugin);
+        this.CFG = CFG;
     }
 
 
@@ -86,7 +101,8 @@ public class MonsterRules extends ListenerModule
             // FEATURE: extra monster spawns underground
             if (maxY > 0)
             {
-                if (world.getEnvironment() == World.Environment.NORMAL && event.getLocation().getBlockY() < maxY && entity instanceof Monster)
+                if (world.getEnvironment() == World.Environment.NORMAL && event.getLocation().getBlockY() < maxY && entity instanceof Monster
+                        && !isExcludedFromPackSpawns(world, entityType))
                 {
                     if (!entityType.equals(EntityType.SILVERFISH)) //no multiple silverfish per block
                     {
@@ -106,6 +122,32 @@ public class MonsterRules extends ListenerModule
                 }
             }
         }
+    }
+
+
+    /**
+     * Whether a monster is excluded from the bonus pack spawns of this module.
+     * <p/>
+     * Without this a naturally spawned Warden or Breeze would drag a whole pack of zombies, skeletons, spiders and
+     * creepers along with them.
+     *
+     * @param world      - world the monster spawned in
+     * @param entityType - type of the spawned monster
+     *
+     * @return true if no additional monsters should be spawned around it
+     */
+    boolean isExcludedFromPackSpawns(World world, EntityType entityType)
+    {
+        final List<String> excluded = CFG.getStringList(RootNode.MORE_MONSTERS_EXCLUDED_TYPES, world.getName());
+        if (excluded == null || excluded.isEmpty())
+            return false;
+
+        final String name = entityType.name();
+        for (int i = 0; i < excluded.size(); i++)
+            if (name.equalsIgnoreCase(excluded.get(i)))
+                return true;
+
+        return false;
     }
 
 

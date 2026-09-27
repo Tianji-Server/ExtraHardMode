@@ -77,6 +77,20 @@ public class MockLocation
     }
 
 
+    /**
+     * Set the Y coordinate of this Location
+     *
+     * @param y - block Y coordinate
+     *
+     * @return this MockLocation for chaining
+     */
+    public MockLocation setBlockY(int y)
+    {
+        when(loc.getBlockY()).thenReturn(y);
+        return this;
+    }
+
+
     public Location get()
     {
         return loc;

@@ -132,8 +132,8 @@ public class Skeletors extends ListenerModule
 
         final int deflectPercent = CFG.getInt(RootNode.SKELETONS_DEFLECT_ARROWS, entity.getWorld().getName());
 
-        // FEATURE: arrows pass through skeletons
-        if (entity instanceof Skeleton && deflectPercent > 0)
+        // FEATURE: arrows pass through skeletons (and all their variants like Bogged or Parched)
+        if (entity instanceof AbstractSkeleton && deflectPercent > 0)
         {
             Entity damageSource = event.getDamager();
 
@@ -143,7 +143,7 @@ public class Skeletors extends ListenerModule
                 Arrow arrow = (Arrow) damageSource;
 
                 Player player = arrow.getShooter() instanceof Player ? (Player) arrow.getShooter() : null;
-                EhmSkeletonDeflectEvent skeliEvent = new EhmSkeletonDeflectEvent(player, (Skeleton) entity, deflectPercent, !plugin.random(deflectPercent));
+                EhmSkeletonDeflectEvent skeliEvent = new EhmSkeletonDeflectEvent(player, (AbstractSkeleton) entity, deflectPercent, !plugin.random(deflectPercent));
                 plugin.getServer().getPluginManager().callEvent(skeliEvent);
 
                 // percent chance
@@ -190,10 +190,10 @@ public class Skeletors extends ListenerModule
         final int totalLimit = CFG.getInt(RootNode.SKELETONS_RELEASE_SILVERFISH_LIMIT_TOTAL, world.getName());
 
         // FEATURE: skeletons sometimes release silverfish to attack their targets
-        if (event.getEntity() instanceof Arrow && event.getEntity().getShooter() instanceof Skeleton)
+        if (event.getEntity() instanceof Arrow && event.getEntity().getShooter() instanceof AbstractSkeleton)
         {
             Arrow arrow = (Arrow) event.getEntity();
-            Skeleton skeleton = (Skeleton) event.getEntity().getShooter();
+            AbstractSkeleton skeleton = (AbstractSkeleton) event.getEntity().getShooter();
             //Slowness Arrows
             if (snowballs && OurRandom.percentChance(snowballsPercent))
             {
@@ -255,7 +255,7 @@ public class Skeletors extends ListenerModule
     public void onSkeletonDeath(EntityDeathEvent event)
     {
         final boolean removeSilverfish = CFG.getBoolean(RootNode.SKELETONS_RELEASE_SILVERFISH_KILL, event.getEntity().getWorld().getName());
-        if (removeSilverfish && event.getEntity() instanceof Skeleton)
+        if (removeSilverfish && event.getEntity() instanceof AbstractSkeleton)
         {
             //Kill all silverfish, but do it slowly as if they are burning up
             for (LivingEntity silverfish : event.getEntity().getWorld().getLivingEntities())
